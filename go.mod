@@ -74,7 +74,3 @@ require (
 )
 
 go 1.15
-
-replace (
-	github.com/xo/usql latest => github.com/tidbcloud/usql latest
-)
