@@ -9,6 +9,7 @@ import (
 	"os/user"
 	"strings"
 
+	"github.com/fatih/color"
 	"github.com/xo/usql/drivers"
 	"github.com/xo/usql/env"
 	"github.com/xo/usql/handler"
@@ -110,6 +111,8 @@ func run(args *Args, u *user.User) error {
 	}
 	defer l.Close()
 
+	printTiDBIcon(l.Stdout())
+
 	// create handler
 	h := handler.New(l, u, wd, args.NoPassword)
 
@@ -181,4 +184,30 @@ func runCommandOrFiles(h *handler.Handler, commandsOrFiles []CommandOrFile) func
 		}
 		return nil
 	}
+}
+
+func printTiDBIcon(w io.Writer) {
+	red := color.New(color.FgRed).SprintfFunc()
+	bold := color.New(color.Bold).SprintfFunc()
+
+	fmt.Fprint(w,
+		red("              ▄▄            "), "\n",
+		red("           ▄▟████▙▖         "), "\n",
+		red("        ▗▟██████████▄▖      "), "\n",
+		red("     ▗▄██████▀▘▀▜██████▄▖   "), "\n",
+		red("  ▗▄██████▛▀      ▀██████▙▄ "), "\n",
+		red("  █████▛▀        ▄▟█████████"), bold("        Welcome to TiDB\n"),
+		red("  ████▌        ▄██████▀▐████"), "\n",
+		red("  ████▌        █████▀  ▐████"), "\n",
+		red("  ████▌ ▗▟▌    ████▌   ▐████"), "   For TiDB Documentation, see\n",
+		red("  ████▌▟██▌    ████▌   ▐████"), "     https://pingcap.com/docs\n",
+		red("  ████████▌    ████▌   ▐████"), "\n",
+		red("  ████████▌    ████▌   ▐████"), "           Questions?\n",
+		red("  ████████▌    ████▌ ▄▟█████"), "   Join TiDB Community Slack at\n",
+		red("  ▝▜███████▄   ████▙██████▛▘"), "  https://pingcap.com/tidbslack/\n",
+		red("     ▀▜██████▙▖█████████▛▀  "), "\n",
+		red("        ▀▜███████████▛▀     "), "\n",
+		red("          ▝▀▜█████▛▀        "), "\n",
+		red("             ▝▀▀▀           "), "\n",
+		"\nPlease enter your TiDB password to log in to a client shell.\n\n")
 }

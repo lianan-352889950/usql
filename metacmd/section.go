@@ -12,16 +12,15 @@ type Section string
 
 // Meta command section types.
 const (
-	SectionGeneral         Section = "General"
-	SectionHelp            Section = "Help"
-	SectionQueryBuffer     Section = "Query Buffer"
-	SectionTransaction     Section = "Transaction"
-	SectionInputOutput     Section = "Input/Output"
-	SectionInformational   Section = "Informational"
-	SectionFormatting      Section = "Formatting"
-	SectionConnection      Section = "Connection"
-	SectionOperatingSystem Section = "Operating System"
-	SectionVariables       Section = "Variables"
+	SectionGeneral       Section = "General"
+	SectionHelp          Section = "Help"
+	SectionQueryBuffer   Section = "Query Buffer"
+	SectionTransaction   Section = "Transaction"
+	SectionInputOutput   Section = "Input/Output"
+	SectionInformational Section = "Informational"
+	SectionFormatting    Section = "Formatting"
+	SectionConnection    Section = "Connection"
+	SectionVariables     Section = "Variables"
 	//SectionLargeObjects    Section = "Large Objects"
 )
 
@@ -35,7 +34,7 @@ var SectionOrder = []Section{
 	SectionGeneral, SectionHelp, SectionQueryBuffer,
 	SectionInputOutput /*, SectionInformational */, SectionFormatting,
 	SectionTransaction,
-	SectionConnection, SectionOperatingSystem, SectionVariables,
+	SectionConnection, SectionVariables,
 }
 
 // Listing writes the formatted command listing to w, separated into different
