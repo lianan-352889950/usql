@@ -186,32 +186,6 @@ func runCommandOrFiles(h *handler.Handler, commandsOrFiles []CommandOrFile) func
 	}
 }
 
-var template = `
-
-              ▄▄            
-           ▄▟████▙▖         
-        ▗▟██████████▄▖      
-     ▗▄██████▀▘▀▜██████▄▖   
-  ▗▄██████▛▀      ▀██████▙▄ 
-  █████▛▀        ▄▟█████████     %s
-  ████▌        ▄██████▀▐████
-  ████▌        █████▀  ▐████
-  ████▌ ▗▟▌    ████▌   ▐████     %s
-  ████▌▟██▌    ████▌   ▐████     %s
-  ████████▌    ████▌   ▐████
-  ████████▌    ████▌   ▐████     %s
-  ████████▌    ████▌ ▄▟█████     %s
-  ▝▜███████▄   ████▙██████▛▘     %s
-     ▀▜██████▙▖█████████▛▀  
-        ▀▜███████████▛▀     
-          ▝▀▜█████▛▀        
-             ▝▀▀▀           
-
-
-Please enter your TiDB password to log in to a client shell.
-
-`
-
 func printTiDBIcon(w io.Writer) {
 	red := color.New(color.FgRed).SprintfFunc()
 	bold := color.New(color.Bold).SprintfFunc()
