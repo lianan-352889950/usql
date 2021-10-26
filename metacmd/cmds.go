@@ -3,15 +3,10 @@ package metacmd
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
 
-	"github.com/xo/dburl"
-
-	"github.com/xo/usql/drivers"
 	"github.com/xo/usql/env"
 	"github.com/xo/usql/text"
 )
@@ -90,66 +85,6 @@ func init() {
 			},
 		},
 
-		Drivers: {
-			Section: SectionGeneral,
-			Name:    "drivers",
-			Desc:    "display information about available database drivers",
-			Process: func(p *Params) error {
-				out := p.Handler.IO().Stdout()
-
-				available := drivers.Available()
-				names := make([]string, len(available))
-				var z int
-				for k := range available {
-					names[z] = k
-					z++
-				}
-				sort.Strings(names)
-
-				fmt.Fprintln(out, text.AvailableDrivers)
-				for _, n := range names {
-					s := "  " + n
-
-					driver, aliases := dburl.SchemeDriverAndAliases(n)
-					if driver != n {
-						s += " (" + driver + ")"
-					}
-					if len(aliases) > 0 {
-						if len(aliases) > 0 {
-							s += " [" + strings.Join(aliases, ", ") + "]"
-						}
-					}
-					fmt.Fprintln(out, s)
-				}
-
-				return nil
-			},
-		},
-
-		Connect: {
-			Section: SectionConnection,
-			Name:    "c",
-			Desc:    "connect to database with url,URL",
-			Aliases: map[string]string{
-				"c":       "connect to database with SQL driver and parameters,DRIVER PARAMS...",
-				"connect": "",
-			},
-			Min: 1,
-			Process: func(p *Params) error {
-				return p.Handler.Open(p.GetAll()...)
-			},
-		},
-
-		Disconnect: {
-			Section: SectionConnection,
-			Name:    "Z",
-			Desc:    "close database connection",
-			Aliases: map[string]string{"disconnect": ""},
-			Process: func(p *Params) error {
-				return p.Handler.Close()
-			},
-		},
-
 		Password: {
 			Section: SectionConnection,
 			Name:    "password",
@@ -168,54 +103,6 @@ func init() {
 				fmt.Fprintln(p.Handler.IO().Stdout())*/
 
 				return nil
-			},
-		},
-
-		Exec: {
-			Section: SectionGeneral,
-			Name:    "g",
-			Desc:    "execute query (and send results to file or |pipe),[FILE] or ;",
-			Aliases: map[string]string{
-				"gexec": "execute query and execute each value of the result",
-				"gset":  "execute query and store results in " + text.CommandName + " variables,[PREFIX]",
-			},
-			Process: func(p *Params) error {
-				p.Result.Exec = ExecOnly
-
-				switch p.Name {
-				case "g":
-					p.Result.ExecParam = p.Get()
-
-				case "gexec":
-					p.Result.Exec = ExecExec
-
-				case "gset":
-					p.Result.Exec, p.Result.ExecParam = ExecSet, p.Get()
-				}
-
-				return nil
-			},
-		},
-
-		Edit: {
-			Section: SectionQueryBuffer,
-			Name:    "e",
-			Desc:    "edit the query buffer (or file) with external editor,[FILE] [LINE]",
-			Aliases: map[string]string{"edit": ""},
-			Process: func(p *Params) error {
-				// get last statement
-				s, buf := p.Handler.Last(), p.Handler.Buf()
-				if buf.Len != 0 {
-					s = buf.String()
-				}
-
-				// reset if no error
-				n, err := env.EditFile(p.Handler.User(), p.Get(), p.Get(), s)
-				if err == nil {
-					buf.Reset(n)
-				}
-
-				return err
 			},
 		},
 
@@ -278,71 +165,6 @@ func init() {
 			Process: func(p *Params) error {
 				fmt.Fprintln(p.Handler.IO().Stdout(), strings.Join(p.GetAll(), " "))
 				return nil
-			},
-		},
-
-		Write: {
-			Section: SectionQueryBuffer,
-			Name:    "w",
-			Min:     1,
-			Desc:    "write query buffer to file,FILE",
-			Aliases: map[string]string{"write": ""},
-			Process: func(p *Params) error {
-				// get last statement
-				s, buf := p.Handler.Last(), p.Handler.Buf()
-				if buf.Len != 0 {
-					s = buf.String()
-				}
-
-				return ioutil.WriteFile(p.Get(), []byte(strings.TrimSuffix(s, "\n")+"\n"), 0644)
-			},
-		},
-
-		ChangeDir: {
-			Section: SectionOperatingSystem,
-			Name:    "cd",
-			Desc:    "change the current working directory,[DIR]",
-			Process: func(p *Params) error {
-				return env.Chdir(p.Handler.User(), p.Get())
-			},
-		},
-
-		SetEnv: {
-			Section: SectionOperatingSystem,
-			Name:    "setenv",
-			Min:     1,
-			Desc:    "set or unset environment variable,NAME [VALUE]",
-			Process: func(p *Params) error {
-				var err error
-
-				n := p.Get()
-				if len(p.Params) == 1 {
-					err = os.Unsetenv(n)
-				} else {
-					err = os.Setenv(n, strings.Join(p.GetAll(), ""))
-				}
-
-				return err
-			},
-		},
-
-		Include: {
-			Section: SectionInputOutput,
-			Name:    "i",
-			Min:     1,
-			Desc:    "execute commands from file,FILE",
-			Aliases: map[string]string{
-				"ir":               `as \i, but relative to location of current script,FILE`,
-				"include":          "",
-				"include_relative": "",
-			},
-			Process: func(p *Params) error {
-				path := p.Get()
-				err := p.Handler.Include(path, p.Name == "ir" || p.Name == "include_relative")
-				if err != nil {
-					err = fmt.Errorf("%s: %v", path, err)
-				}
-				return err
 			},
 		},
 
