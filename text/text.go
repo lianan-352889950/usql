@@ -73,7 +73,6 @@ var (
 		{`copyright`, `for distribution terms`},
 		//[]string{`h`, `for help with SQL commands`},
 		{`?`, `for help with ` + CommandName + ` commands`},
-		{`g`, `or terminate with semicolon to execute query`},
 		{`q`, `to quit`},
 	}
 

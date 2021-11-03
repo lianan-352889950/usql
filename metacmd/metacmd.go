@@ -58,35 +58,11 @@ const (
 	// Describe is the describe meta command (\d and variants).
 	Describe
 
-	// Exec is the execute meta command (\g and variants).
-	Exec
-
-	// Edit is the edit query buffer meta command (\e).
-	Edit
-
 	// Print is the print query buffer meta command (\p, \print, \raw).
 	Print
 
 	// Reset is the reset query buffer meta command (\r, \reset).
 	Reset
-
-	// Echo is the echo meta command (\echo).
-	Echo
-
-	// Write is the write meta command (\w).
-	Write
-
-	// ChangeDir is the system change directory meta command (\cd).
-	ChangeDir
-
-	// SetEnv is the system set environment variable meta command (\setenv).
-	SetEnv
-
-	// ShellExec is the system shell exec meta command (\!).
-	ShellExec
-
-	// Include is the system include file meta command (\i and variants).
-	Include
 
 	// Transact is the transaction meta command (\begin, \commit, \rollback).
 	Transact

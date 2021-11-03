@@ -4,10 +4,8 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
-	"os/exec"
 	"os/user"
 	"path/filepath"
 	"regexp"
@@ -15,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/xo/dburl"
-	"github.com/zaf/temp"
 
 	"github.com/xo/usql/text"
 )
@@ -100,67 +97,6 @@ func OpenFile(u *user.User, path string, relative bool) (string, *os.File, error
 	}
 
 	return path, f, nil
-}
-
-// EditFile edits a file. If path is empty, then a temporary file will be created.
-func EditFile(u *user.User, path, line, s string) ([]rune, error) {
-	var err error
-
-	ed := Getenv(text.CommandUpper()+"_EDITOR", "EDITOR", "VISUAL")
-	if ed == "" {
-		return nil, text.ErrNoEditorDefined
-	}
-
-	if path != "" {
-		path = expand(u, path)
-	} else {
-		var f *os.File
-		f, err = temp.File("", text.CommandLower(), "sql")
-		if err != nil {
-			return nil, err
-		}
-
-		err = f.Close()
-		if err != nil {
-			return nil, err
-		}
-
-		path = f.Name()
-		err = ioutil.WriteFile(path, []byte(strings.TrimSuffix(s, "\n")+"\n"), 0644)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// setup args
-	args := []string{path}
-	if line != "" {
-		prefix := Getenv(text.CommandUpper() + "_EDITOR_LINENUMBER_ARG")
-		if prefix == "" {
-			prefix = "+"
-		}
-		args = append(args, prefix+line)
-	}
-
-	// create command
-	c := exec.Command(ed, args...)
-	c.Stdin = os.Stdin
-	c.Stdout = os.Stdout
-	c.Stderr = os.Stderr
-
-	// run
-	err = c.Run()
-	if err != nil {
-		return nil, err
-	}
-
-	// read
-	buf, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-
-	return []rune(strings.TrimSuffix(string(buf), "\n")), nil
 }
 
 // HistoryFile returns the path to the history file.
@@ -310,75 +246,8 @@ func matchPassEntry(n, entry []string) (string, string, bool) {
 	return entry[4], entry[5], true
 }
 
-// Chdir changes the current working directory to the specified path, or to the
-// user's home directory if path is not specified.
-func Chdir(u *user.User, path string) error {
-	if path != "" {
-		path = expand(u, path)
-	} else {
-		path = u.HomeDir
-	}
-
-	return os.Chdir(path)
-}
-
-// getshell returns the user's defined SHELL, or system default (if found on
-// path).
-func getshell() (string, string) {
-	var shell, param string
-
-	shell, param = Getenv("SHELL"), "-c"
-	if shell == "" && runtime.GOOS == "windows" {
-		shell, param = Getenv("COMSPEC", "ComSpec"), "/c"
-	}
-
-	// look up path for "cmd.exe" if no other SHELL
-	if shell == "" && runtime.GOOS == "windows" {
-		shell, _ = exec.LookPath("cmd.exe")
-		if shell != "" {
-			param = "/c"
-		}
-	}
-
-	// lookup path for "sh" if no other SHELL
-	if shell == "" {
-		shell, _ = exec.LookPath("sh")
-		if shell != "" {
-			param = "-c"
-		}
-	}
-
-	return shell, param
-}
-
-// Exec runs s using the user's SHELL / COMSPEC (Windows, aka 'ComSpec'),
-// with -c (or /c).
-//
-// When SHELL or COMSPEC is not defined, then "sh" / "cmd.exe" will be used
-// instead, assuming it is found on the system's PATH.
-func Exec(s string) (string, error) {
-	shell, param := getshell()
-
-	if shell == "" {
-		return "", text.ErrNoShellAvailable
-	}
-
-	if strings.TrimSpace(s) != "" {
-		buf, err := exec.Command(shell, param, s).CombinedOutput()
-		if err != nil {
-			return "", err
-		}
-		return strings.TrimSpace(string(buf)), nil
-	}
-
-	// drop to shell
-	cmd := exec.Command(shell)
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
-	return "", cmd.Run()
-}
-
 // Unquote unquotes the string.
-func Unquote(u *user.User, s string, exec bool) (string, error) {
+func Unquote(u *user.User, s string) (string, error) {
 	if s == "" {
 		return "", nil
 	}
@@ -400,19 +269,6 @@ func Unquote(u *user.User, s string, exec bool) (string, error) {
 
 		case c == '\'' || c == '"':
 			return unquote(s, c)
-
-		case exec && c == '`':
-			var err error
-			s, err = unquote(s, c)
-			if err != nil {
-				return "", err
-			}
-
-			if strings.TrimSpace(s) == "" {
-				return "", nil
-			}
-
-			return Exec(s)
 		}
 	}
 

@@ -158,16 +158,6 @@ func init() {
 			},
 		},
 
-		Echo: {
-			Section: SectionInputOutput,
-			Name:    "echo",
-			Desc:    "write string to standard output,[STRING]",
-			Process: func(p *Params) error {
-				fmt.Fprintln(p.Handler.IO().Stdout(), strings.Join(p.GetAll(), " "))
-				return nil
-			},
-		},
-
 		Transact: {
 			Section: SectionTransaction,
 			Name:    "begin",
