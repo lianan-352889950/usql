@@ -136,7 +136,7 @@ type Params struct {
 // Get returns the next parameter, increasing p.Result.Processed by 1.
 func (p *Params) Get() string {
 	if len(p.Params) > p.Result.Processed {
-		s, _ := env.Unquote(p.Handler.User(), p.Params[p.Result.Processed], true)
+		s, _ := env.Unquote(p.Handler.User(), p.Params[p.Result.Processed])
 		p.Result.Processed++
 		return s
 	}
@@ -161,7 +161,7 @@ func (p *Params) GetAll() []string {
 	x := make([]string, len(p.Params)-p.Result.Processed)
 	var j int
 	for i := p.Result.Processed; i < len(p.Params); i++ {
-		s, _ := env.Unquote(p.Handler.User(), p.Params[i], true)
+		s, _ := env.Unquote(p.Handler.User(), p.Params[i])
 		x[j] = s
 		j++
 	}
