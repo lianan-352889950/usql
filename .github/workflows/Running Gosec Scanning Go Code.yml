@@ -6,7 +6,9 @@ on:
   push:
     branches:
       - master
-
+  pull_request:
+    branches:
+      - master
 jobs:
   scanning-go-code:
     runs-on: ubuntu-latest
